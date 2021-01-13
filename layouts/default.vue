@@ -50,8 +50,9 @@
 <script lang="ts">
 import firebase from "firebase";
 import "firebase/auth";
+import Vue from "vue";
 
-export default {
+export default Vue.extend({
   data() {
     return {
       clipped: false,
@@ -73,8 +74,8 @@ export default {
       rightDrawer: false,
       title: "Nusic mini",
       isUserSignedIn: false,
-      userName: "" as string,
-      userPicture: "" as string,
+      userName: "",
+      userPicture: "",
     };
   },
   created() {
@@ -110,7 +111,7 @@ export default {
       const respose = await firebase.auth().signOut();
     },
   },
-};
+});
 </script>
 <style scoped lang="scss">
 .user-name {

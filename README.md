@@ -1,5 +1,7 @@
 # nuxt-js-nusic
 
+This application was coded for a interview purpose and still in progress.
+
 ## Build Setup
 
 ```bash
