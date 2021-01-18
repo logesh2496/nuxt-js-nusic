@@ -70,6 +70,7 @@ export default Vue.extend({
       console.log({ row, col });
     },
     generatePath() {
+      this.allPath = {};
       this.getDistance(parseInt(this.noOfPaths), this.createConnectedPaths);
     },
     onShowClick(i: number) {
