@@ -221,12 +221,7 @@ export default Vue.extend({
                   colIndex: newColIndex,
                 },
               ];
-              const newPath = this.recursiveTree(
-                matrix,
-                newRowIndex,
-                newColIndex,
-                newPointer
-              );
+              this.recursiveTree(matrix, newRowIndex, newColIndex, newPointer);
             }
             this.allPath[pointer].push({
               rowIndex: replaceIndex[0],
@@ -250,12 +245,7 @@ export default Vue.extend({
                   colIndex: newColIndex,
                 },
               ];
-              const newPath = this.recursiveTree(
-                matrix,
-                newRowIndex,
-                newColIndex,
-                newPointer
-              );
+              this.recursiveTree(matrix, newRowIndex, newColIndex, newPointer);
             }
             this.allPath[pointer].push({
               rowIndex: insertIndex[0],
@@ -267,9 +257,9 @@ export default Vue.extend({
             colIndex = deleteIndex[1];
             if (isMultipleRoutes) {
               const newRowIndex =
-                minValue === replaceValue ? replaceIndex[0] : deleteIndex[0];
+                minValue === replaceValue ? replaceIndex[0] : insertIndex[0];
               const newColIndex =
-                minValue === replaceValue ? replaceIndex[1] : deleteIndex[1];
+                minValue === replaceValue ? replaceIndex[1] : insertIndex[1];
               const newPointer = pointer + 1;
               this.allPath[newPointer] = [
                 ...this.allPath[pointer],
@@ -278,12 +268,7 @@ export default Vue.extend({
                   colIndex: newColIndex,
                 },
               ];
-              const newPath = this.recursiveTree(
-                matrix,
-                newRowIndex,
-                newColIndex,
-                newPointer
-              );
+              this.recursiveTree(matrix, newRowIndex, newColIndex, newPointer);
             }
             this.allPath[pointer].push({
               rowIndex: deleteIndex[0],
