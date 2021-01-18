@@ -9,4 +9,9 @@ export const _groupBy = (items: object[], keyName: string) => {
         }
     });
     return groupedObj;
+};
+
+export const hasMultipleMatch = (...args: number[]): boolean => {
+    const minValue = Math.min(...args);
+    return args.some((value: number, i: number) => args.indexOf(value) !== i && value === minValue);
 }

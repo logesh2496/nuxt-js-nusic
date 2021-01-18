@@ -90,6 +90,7 @@ export default Vue.extend({
         }
         this.isUserSignedIn = true;
       } else {
+        this.$router.push("/");
         this.userName = this.userPicture = "";
         this.isUserSignedIn = false;
       }

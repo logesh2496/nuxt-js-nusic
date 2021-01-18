@@ -27,10 +27,18 @@
           :name="col",
           :pathHighlighter="pathHighlighter"
         )
+  .paths(v-if="generateMath") Generated No of Paths:
+    span {{ Object.keys(allPath).length }}
+    .path-container
+      .path-row(v-for="(singlePath, i) in allPath")
+        input(type="button", @click="onShowClick(i)", value="Show")
+        .single-path(v-for="operation in singlePath")
+          .way {{ operation }}
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+import { hasMultipleMatch } from "~/helpers";
 import Square from "./Square.vue";
 
 export default Vue.extend({
@@ -47,6 +55,8 @@ export default Vue.extend({
       createConnectedPaths: false,
       noOfPaths: "1",
       pathHighlighter: [] as PathIndex[],
+      allPath: {} as any,
+      ignorableProps: {},
     };
   },
   methods: {
@@ -61,6 +71,9 @@ export default Vue.extend({
     },
     generatePath() {
       this.getDistance(parseInt(this.noOfPaths), this.createConnectedPaths);
+    },
+    onShowClick(i: number) {
+      this.pathHighlighter = this.allPath[i];
     },
     getDistance(
       noOfPaths: number,
@@ -118,6 +131,7 @@ export default Vue.extend({
       this.squareData = matrix;
       this.pathHighlighter = shortestPath;
       console.log({ shortestPath });
+      console.log({ allPath: this.allPath });
       this.generateMath = true;
       return [path];
     },
@@ -148,12 +162,27 @@ export default Vue.extend({
 
       result.push({ rowIndex: currentRowIndex, colIndex });
 
-      while (currentRowIndex) {
+      const pathPointer = 0;
+      this.allPath[pathPointer] = [{ rowIndex: currentRowIndex, colIndex }];
+      this.recursiveTree(matrix, currentRowIndex, colIndex, pathPointer);
+      return this.allPath["0"];
+    },
+
+    recursiveTree(
+      matrix: number[][],
+      currentRowIndex: number,
+      colIndex: number,
+      pointer: number
+    ) {
+      while (currentRowIndex || colIndex) {
         const rowIndex: number = currentRowIndex;
 
-        const deleteIndex: number[] = [rowIndex, colIndex - 1];
-        const replaceIndex: number[] = [rowIndex - 1, colIndex - 1];
-        const insertIndex: number[] = [rowIndex - 1, colIndex];
+        const deleteIndex: number[] = [rowIndex, (colIndex || 1) - 1];
+        const replaceIndex: number[] = [
+          (rowIndex || 1) - 1,
+          (colIndex || 1) - 1,
+        ];
+        const insertIndex: number[] = [(rowIndex || 1) - 1, colIndex];
 
         const deletionValue: number = matrix[deleteIndex[0]][deleteIndex[1]];
         const replaceValue: number = matrix[replaceIndex[0]][replaceIndex[1]];
@@ -167,11 +196,39 @@ export default Vue.extend({
           insertionValue,
           deletionValue
         );
+
+        const isMultipleRoutes = hasMultipleMatch(
+          deletionValue,
+          replaceValue,
+          insertionValue
+        );
+
         switch (kind) {
           case OperationKind.replace:
             currentRowIndex = replaceIndex[0];
             colIndex = replaceIndex[1];
-            result.push({
+            if (isMultipleRoutes) {
+              const newRowIndex =
+                minValue === insertionValue ? insertIndex[0] : deleteIndex[0];
+              const newColIndex =
+                minValue === insertionValue ? insertIndex[1] : deleteIndex[1];
+              const newPointer = pointer + 1;
+
+              this.allPath[newPointer] = [
+                ...this.allPath[pointer],
+                {
+                  rowIndex: newRowIndex,
+                  colIndex: newColIndex,
+                },
+              ];
+              const newPath = this.recursiveTree(
+                matrix,
+                newRowIndex,
+                newColIndex,
+                newPointer
+              );
+            }
+            this.allPath[pointer].push({
               rowIndex: replaceIndex[0],
               colIndex: replaceIndex[1],
             });
@@ -179,18 +236,64 @@ export default Vue.extend({
           case OperationKind.insert:
             currentRowIndex = insertIndex[0];
             colIndex = insertIndex[1];
-            result.push({ rowIndex: insertIndex[0], colIndex: insertIndex[1] });
+            if (isMultipleRoutes) {
+              const newRowIndex =
+                minValue === replaceValue ? replaceIndex[0] : deleteIndex[0];
+              const newColIndex =
+                minValue === replaceValue ? replaceIndex[1] : deleteIndex[1];
+              const newPointer = pointer + 1;
+
+              this.allPath[newPointer] = [
+                ...this.allPath[pointer],
+                {
+                  rowIndex: newRowIndex,
+                  colIndex: newColIndex,
+                },
+              ];
+              const newPath = this.recursiveTree(
+                matrix,
+                newRowIndex,
+                newColIndex,
+                newPointer
+              );
+            }
+            this.allPath[pointer].push({
+              rowIndex: insertIndex[0],
+              colIndex: insertIndex[1],
+            });
             break;
           case OperationKind.delete:
             currentRowIndex = deleteIndex[0];
             colIndex = deleteIndex[1];
-            result.push({ rowIndex: deleteIndex[0], colIndex: deleteIndex[1] });
+            if (isMultipleRoutes) {
+              const newRowIndex =
+                minValue === replaceValue ? replaceIndex[0] : deleteIndex[0];
+              const newColIndex =
+                minValue === replaceValue ? replaceIndex[1] : deleteIndex[1];
+              const newPointer = pointer + 1;
+              this.allPath[newPointer] = [
+                ...this.allPath[pointer],
+                {
+                  rowIndex: newRowIndex,
+                  colIndex: newColIndex,
+                },
+              ];
+              const newPath = this.recursiveTree(
+                matrix,
+                newRowIndex,
+                newColIndex,
+                newPointer
+              );
+            }
+            this.allPath[pointer].push({
+              rowIndex: deleteIndex[0],
+              colIndex: deleteIndex[1],
+            });
             break;
           default:
             console.error(`Kind exception ${kind}`);
         }
       }
-      return result;
     },
   },
 });
@@ -243,6 +346,20 @@ export interface PathIndex {
     border: 1px solid;
     margin-left: 10px;
     padding: 5px;
+  }
+  .path-container {
+    display: flex;
+    flex-wrap: wrap;
+
+    .paths {
+      span {
+        margin-left: 5px;
+        font-weight: bold;
+      }
+    }
+    .path-row {
+      margin: 30px;
+    }
   }
 }
 </style>
