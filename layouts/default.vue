@@ -122,4 +122,7 @@ img {
   border-radius: 50%;
   margin-right: 10px;
 }
+.container {
+  height: 100%;
+}
 </style>
